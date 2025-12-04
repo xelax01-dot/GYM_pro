@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Workout Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { overscroll-behavior: none; }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+    </style>
+</head>
+<body class="bg-gray-900 overflow-x-hidden">
+    <div id="app"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script>
+        const workoutPrograms = [
+            {
+                nome: "PETTO/BICIPITI",
+                color: "from-red-500 to-pink-600",
+                icon: "💪",
+                esercizi: [
+                    { nome: 'CARDIO', reps: [5], recupero: 60, isCardio: true },
+                    { nome: 'PANCA PIANA', reps: [15, 12, 12, 10], recupero: 60 },
+                    { nome: 'PECTORAL MACHINE', reps: [15, 12, 12], recupero: 60 },
+                    { nome: 'PANCA INCLINATA 30 DEG MANUBRI', reps: [15, 15, 12, 12], recupero: 60 },
+                    { nome: 'PUSH UP', reps: [16, 16, 16, 16], recupero: 60 },
+                    { nome: 'CURL CAVO BASSO', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'CURL SAGOMATO', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'CURL CAVO BASSO/PLANK INCROCIO DIETRO', reps: [20, 14, 20, 14, 20, 14], recupero: 60 }
+                ]
+            },
+            {
+                nome: "BACK/TRICIPITI",
+                color: "from-blue-500 to-cyan-600",
+                icon: "🦾",
+                esercizi: [
+                    { nome: 'VOGATORE', reps: [10], recupero: 60, isCardio: true },
+                    { nome: 'LAT MACHINE PRESA T (spingi i gomiti)', reps: [10, 12, 12, 10], recupero: 60 },
+                    { nome: 'REMATORE SINGOLO', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'TIRATE AL MENTO CAVO ALTO', reps: [15, 12, 12, 10], recupero: 60 },
+                    { nome: 'PULL UP PIEDI A TERRA', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'PUSH DOWN CORDA', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'FRENCH PRESS SAGOMATO', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'CRUNCH OBLIQUI SU FIT', reps: [20], recupero: 0 },
+                    { nome: 'PLANK GOMITI SU FIT', reps: [30], recupero: 30 },
+                    { nome: 'CRUNCH OBLIQUI SU FIT', reps: [20], recupero: 0 },
+                    { nome: 'PLANK GOMITI SU FIT', reps: [30], recupero: 30 },
+                    { nome: 'CRUNCH OBLIQUI SU FIT', reps: [20], recupero: 0 },
+                    { nome: 'PLANK GOMITI SU FIT', reps: [30], recupero: 30 }
+                ]
+            },
+            {
+                nome: "GAMBE/SPALLE",
+                color: "from-green-500 to-emerald-600",
+                icon: "🦵",
+                esercizi: [
+                    { nome: 'CARDIO', reps: [10], recupero: 60, isCardio: true },
+                    { nome: 'LEG PRESS', reps: [15, 12, 10, 10], recupero: 60 },
+                    { nome: 'AFFONDO BULGARO CON MANUBRI', reps: [12, 12, 12], recupero: 60 },
+                    { nome: 'HACK SQUAT', reps: [15, 12, 12, 10], recupero: 60 },
+                    { nome: 'HIP THRUST', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'SHOULDER PRESS MULTIPOWER', reps: [15, 12, 10, 10], recupero: 60 },
+                    { nome: 'ALZATE LATERALI', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'CRUNCH OBLIQUI AVANZATI/SUPERMAN', reps: [12, 10, 12, 10, 12, 10], recupero: 30 }
+                ]
+            },
+            {
+                nome: "RICHIAMO",
+                color: "from-purple-500 to-violet-600",
+                icon: "⚡",
+                esercizi: [
+                    { nome: 'CARDIO', reps: [10], recupero: 60, isCardio: true },
+                    { nome: 'PANCA PIANA', reps: [15, 12, 10, 10], recupero: 60 },
+                    { nome: 'PULLEY', reps: [15, 12, 10, 10], recupero: 60 },
+                    { nome: 'STACCHI EXAGON BAR', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'PULL OVER', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'ROW TRX', reps: [16, 16, 16], recupero: 60 },
+                    { nome: 'LEG PRESS', reps: [10, 10, 10, 10], recupero: 60 },
+                    { nome: 'ARCOBALENO DISCO', reps: [20, 20, 20, 20], recupero: 30 },
+                    { nome: 'CRUNCH FARFALLA', reps: [20, 20, 20, 20], recupero: 30 }
+                ]
+            }
+        ];
+
+        const AppState = {
+            screen: 'home',
+            selectedWorkout: null,
+            currentExerciseIdx: 0,
+            currentSetIdx: 0,
+            weight: '',
+            isResting: false,
+            restTime: 0,
+            showWeightInput: true,
+            workoutData: [],
+            workoutDate: '',
+            timerInterval: null
+        };
+
+        function updateState(changes) {
+            Object.assign(AppState, changes);
+            render();
+        }
+
+        function startWorkout(workoutIndex) {
+            const workout = workoutPrograms[workoutIndex];
+            updateState({
+                screen: 'workout',
+                selectedWorkout: workout,
+                currentExerciseIdx: 0,
+                currentSetIdx: 0,
+                weight: '',
+                workoutData: [],
+                showWeightInput: true,
+                isResting: false,
+                workoutDate: new Date().toLocaleString('it-IT', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            });
+        }
+
+        function completeSet() {
+            const exercise = AppState.selectedWorkout.esercizi[AppState.currentExerciseIdx];
+            const currentReps = exercise.reps[AppState.currentSetIdx];
+
+            const setData = {
+                esercizio: exercise.nome,
+                serie: AppState.currentSetIdx + 1,
+                ripetizioni: currentReps,
+                peso: exercise.isCardio ? 0 : (parseFloat(AppState.weight) || 0),
+                isCardio: exercise.isCardio || false
+            };
+            
+            AppState.workoutData.push(setData);
+
+            if (AppState.currentSetIdx < exercise.reps.length - 1) {
+                updateState({
+                    currentSetIdx: AppState.currentSetIdx + 1,
+                    weight: '',
+                    restTime: exercise.recupero,
+                    isResting: true,
+                    showWeightInput: false
+                });
+                startTimer();
+            } else {
+                if (AppState.currentExerciseIdx < AppState.selectedWorkout.esercizi.length - 1) {
+                    updateState({
+                        currentExerciseIdx: AppState.currentExerciseIdx + 1,
+                        currentSetIdx: 0,
+                        weight: '',
+                        showWeightInput: true,
+                        isResting: false
+                    });
+                } else {
+                    if (AppState.timerInterval) {
+                        clearInterval(AppState.timerInterval);
+                    }
+                    updateState({ screen: 'complete' });
+                }
+            }
+        }
+
+        function startTimer() {
+            if (AppState.timerInterval) {
+                clearInterval(AppState.timerInterval);
+            }
+            
+            AppState.timerInterval = setInterval(function() {
+                if (AppState.restTime > 0) {
+                    AppState.restTime = AppState.restTime - 1;
+                    render();
+                } else {
+                    clearInterval(AppState.timerInterval);
+                    AppState.timerInterval = null;
+                    updateState({ 
+                        isResting: false, 
+                        showWeightInput: true 
+                    });
+                }
+            }, 1000);
+        }
+
+        function skipRest() {
+            if (AppState.timerInterval) {
+                clearInterval(AppState.timerInterval);
+                AppState.timerInterval = null;
+            }
+            updateState({ 
+                isResting: false, 
+                restTime: 0, 
+                showWeightInput: true 
+            });
+        }
+
+        function generatePDF() {
+            try {
+                const jsPDF = window.jspdf.jsPDF;
+                const doc = new jsPDF();
+
+                doc.setFontSize(24);
+                doc.setFont('helvetica', 'bold');
+                doc.text('WORKOUT PRO', 105, 20, { align: 'center' });
+
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Report Allenamento', 105, 30, { align: 'center' });
+
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.5);
+                doc.line(20, 35, 190, 35);
+
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Data:', 20, 45);
+                doc.setFont('helvetica', 'normal');
+                doc.text(AppState.workoutDate, 40, 45);
+
+                doc.setFont('helvetica', 'bold');
+                doc.text('Allenamento:', 20, 52);
+                doc.setFont('helvetica', 'normal');
+                doc.text(AppState.selectedWorkout.nome, 50, 52);
+
+                doc.line(20, 57, 190, 57);
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(10);
+                var y = 67;
+
+                doc.text('Esercizio', 20, y);
+                doc.text('Serie', 120, y);
+                doc.text('Reps', 145, y);
+                doc.text('Peso (kg)', 170, y);
+
+                y = y + 5;
+                doc.line(20, y, 190, y);
+                y = y + 7;
+
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+
+                for (var i = 0; i < AppState.workoutData.length; i++) {
+                    var data = AppState.workoutData[i];
+                    
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+
+                    var nomeEsercizio = data.esercizio.length > 50 ? data.esercizio.substring(0, 47) + '...' : data.esercizio;
+
+                    doc.text(nomeEsercizio, 20, y);
+                    doc.text(data.serie.toString(), 125, y);
+
+                    if (data.isCardio) {
+                        doc.text(data.ripetizioni.toString() + ' min', 147, y);
+                        doc.text('-', 175, y);
+                    } else {
+                        doc.text(data.ripetizioni.toString(), 150, y);
+                        doc.text(data.peso.toFixed(1), 175, y);
+                    }
+
+                    y = y + 7;
+                }
+
+                doc.setFontSize(8);
+                doc.setTextColor(128);
+                doc.text('Generato da Workout Pro', 105, 285, { align: 'center' });
+
+                var fileName = 'Workout_' + AppState.selectedWorkout.nome.replace(/\//g, '-') + '_' + new Date().toISOString().split('T')[0] + '.pdf';
+                doc.save(fileName);
+                
+                alert('PDF scaricato con successo!');
+            } catch (error) {
+                console.error('Errore generazione PDF:', error);
+                alert('Errore durante la generazione del PDF. Riprova.');
+            }
+        }
+
+        function updateWeight(value) {
+            AppState.weight = value;
+            render();
+        }
+
+        function render() {
+            var app = document.getElementById('app');
+            var html = '';
+
+            if (AppState.screen === 'home') {
+                html = '<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6">';
+                html += '<div class="max-w-md mx-auto">';
+                html += '<div class="text-center mb-8 mt-8">';
+                html += '<div class="inline-block p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-full mb-4">';
+                html += '<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+                html += '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>';
+                html += '</svg></div>';
+                html += '<h1 class="text-4xl font-bold mb-2">Workout Pro</h1>';
+                html += '<p class="text-gray-400">Scegli il tuo allenamento</p>';
+                html += '</div><div class="space-y-4">';
+
+                for (var i = 0; i < workoutPrograms.length; i++) {
+                    var workout = workoutPrograms[i];
+                    html += '<button onclick="startWorkout(' + i + ')" class="w-full bg-gradient-to-r ' + workout.color + ' p-6 rounded-2xl shadow-2xl transform transition active:scale-95">';
+                    html += '<div class="flex items-center justify-between">';
+                    html += '<div class="flex items-center space-x-4">';
+                    html += '<span class="text-4xl">' + workout.icon + '</span>';
+                    html += '<div class="text-left">';
+                    html += '<h2 class="text-xl font-bold">' + workout.nome + '</h2>';
+                    html += '<p class="text-sm opacity-90">' + workout.esercizi.length + ' esercizi</p>';
+                    html += '</div></div>';
+                    html += '<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
+                    html += '</div></button>';
+                }
+
+                html += '</div></div></div>';
+                app.innerHTML = html;
+
+            } else if (AppState.screen === 'workout') {
+                var currentExercise = AppState.selectedWorkout.esercizi[AppState.currentExerciseIdx];
+                var currentReps = currentExercise.reps[AppState.currentSetIdx];
+                var totalSets = currentExercise.reps.length;
+                var progress = (AppState.currentExerciseIdx * 100) / AppState.selectedWorkout.esercizi.length;
+
+                html = '<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">';
+                html += '<div class="max-w-md mx-auto p-6">';
+                html += '<div class="mb-6">';
+                html += '<div class="flex items-center justify-between mb-2">';
+                html += '<h2 class="text-2xl font-bold">' + AppState.selectedWorkout.nome + '</h2>';
+                html += '<span class="text-sm text-gray-400">' + (AppState.currentExerciseIdx + 1) + '/' + AppState.selectedWorkout.esercizi.length + '</span>';
+                html += '</div>';
+                html += '<div class="w-full bg-gray-700 rounded-full h-2">';
+                html += '<div class="h-2 rounded-full bg-gradient-to-r ' + AppState.selectedWorkout.color + ' transition-all duration-500" style="width: ' + progress + '%"></div>';
+                html += '</div></div>';
+
+                html += '<div class="bg-gradient-to-br ' + AppState.selectedWorkout.color + ' rounded-3xl p-8 shadow-2xl mb-6">';
+                html += '<h3 class="text-2xl font-bold mb-4 text-center">' + currentExercise.nome + '</h3>';
+                html += '<div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-6">';
+                html += '<div class="text-center">';
+                html += '<p class="text-sm opacity-90 mb-2">' + (currentExercise.isCardio ? 'Durata' : 'Serie ' + (AppState.currentSetIdx + 1) + ' di ' + totalSets) + '</p>';
+                html += '<p class="text-6xl font-bold mb-2">' + currentReps + '</p>';
+                html += '<p class="text-lg opacity-90">' + (currentExercise.isCardio ? 'minuti' : 'ripetizioni') + '</p>';
+                html += '</div></div>';
+
+                html += '<div class="flex gap-2 justify-center mb-4">';
+                for (var j = 0; j < currentExercise.reps.length; j++) {
+                    var dotClass = j < AppState.currentSetIdx ? 'bg-white' : (j === AppState.currentSetIdx ? 'bg-white/60' : 'bg-white/20');
+                    html += '<div class="h-2 w-8 rounded-full ' + dotClass + '"></div>';
+                }
+                html += '</div></div>';
+
+                if (AppState.isResting) {
+                    html += '<div class="text-center">';
+                    html += '<div class="bg-gray-800 rounded-3xl p-8 mb-6">';
+                    html += '<svg class="w-16 h-16 mx-auto mb-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                    html += '<p class="text-sm text-gray-400 mb-2">Recupero</p>';
+                    html += '<p class="text-7xl font-bold mb-2">' + AppState.restTime + '</p>';
+                    html += '<p class="text-lg text-gray-400">secondi</p>';
+                    html += '</div>';
+                    html += '<div class="animate-pulse text-gray-400 mb-6">Preparati per la prossima serie...</div>';
+                    html += '<button onclick="skipRest()" class="w-full bg-gradient-to-r from-yellow-500 to-orange-600 py-4 rounded-xl font-bold text-lg shadow-lg transform transition active:scale-95 flex items-center justify-center space-x-3">';
+                    html += '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>';
+                    html += '<span>Salta Recupero</span>';
+                    html += '</button></div>';
+                } else if (AppState.showWeightInput) {
+                    html += '<div class="space-y-4">';
+                    if (!currentExercise.isCardio) {
+                        html += '<div>';
+                        html += '<label class="block text-sm text-gray-400 mb-2">Peso utilizzato (kg)</label>';
+                        html += '<input type="number" step="0.5" value="' + AppState.weight + '" oninput="updateWeight(this.value)" class="w-full bg-gray-800 border-2 border-gray-700 rounded-xl p-4 text-2xl text-center focus:border-orange-500 focus:outline-none text-white" placeholder="0">';
+                        html += '</div>';
+                    }
+                    var disabled = !currentExercise.isCardio && !AppState.weight ? ' disabled' : '';
+                    html += '<button onclick="completeSet()"' + disabled + ' class="w-full bg-gradient-to-r from-orange-500 to-red-600 py-5 rounded-xl font-bold text-xl shadow-lg transform transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3">';
+                    html += '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                    html += '<span>' + (currentExercise.isCardio ? 'Inizia ' + currentReps + ' minuti di cardio!' : 'VAI! Fai ' + currentReps + ' ripetizioni!') + '</span>';
+                    html += '</button></div>';
+                }
+
+                html += '</div></div>';
+                app.innerHTML = html;
+
+            } else if (AppState.screen === 'complete') {
+                html = '<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex items-center justify-center p-6">';
+                html += '<div class="text-center max-w-md w-full">';
+                html += '<div class="inline-block p-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full mb-6 animate-bounce">';
+                html += '<svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>';
+                html += '</div>';
+                html += '<h1 class="text-5xl font-bold mb-4">Complimenti!</h1>';
+                html += '<p class="text-xl text-gray-400 mb-4">Hai completato l\'allenamento</p>';
+                html += '<p class="text-3xl font-bold mb-2">' + AppState.selectedWorkout.nome + '</p>';
+                html += '<p class="text-sm text-gray-400 mb-8">' + AppState.workoutDate + '</p>';
+                html += '<div class="space-y-4">';
+                html += '<button onclick="generatePDF()" class="w-full bg-gradient-to-r from-blue-500 to-cyan-600 px-8 py-4 rounded-xl font-bold text-lg shadow-lg transform transition active:scale-95 flex items-center justify-center space-x-3">';
+                html += '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>';
+                html += '<span>Scarica Report PDF</span>';
+                html += '</button>';
+                html += '<button onclick="updateState({ screen: \'home\' })" class="w-full bg-gradient-to-r from-orange-500 to-red-600 px-8 py-4 rounded-xl font-bold text-lg shadow-lg transform transition active:scale-95">';
+                html += 'Torna alla Home';
+                html += '</button></div></div></div>';
+                app.innerHTML = html;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            render();
+        });
+    </script>
+</body>
+</html>
